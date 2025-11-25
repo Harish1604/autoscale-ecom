@@ -6,70 +6,31 @@ on:
 
 jobs:
   build-deploy:
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_REGISTRY: docker.io
+    runs-on: self-hosted
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Show workspace (debug)
-        run: |
-          echo "Working dir: $(pwd)"
-          ls -la
-          echo "backend exists?"
-          ls -la backend || true
-          echo "frontend exists?"
-          ls -la frontend || true
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
+      - name: Docker login
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build & push backend image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/autoscale-backend:latest,${{ secrets.DOCKER_USERNAME }}/autoscale-backend:${{ github.sha }}
-
-      - name: Build & push frontend image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/autoscale-frontend:latest,${{ secrets.DOCKER_USERNAME }}/autoscale-frontend:${{ github.sha }}
-
-      - name: Configure kubeconfig
-        env:
-          KUBECONFIG_PATH: ${{ runner.temp }}/kubeconfig
+      - name: Build & push backend
+        working-directory: backend
         run: |
-          # write kubeconfig safely (preserves newlines)
-          printf '%s' "${{ secrets.KUBE_CONFIG }}" > "$KUBECONFIG_PATH"
-          chmod 600 "$KUBECONFIG_PATH"
-          echo "kubeconfig written to $KUBECONFIG_PATH"
-        # expose the custom kubeconfig path to following steps
-      - name: Set KUBECONFIG env var for following steps
-        run: echo "KUBECONFIG=${{ runner.temp }}/kubeconfig" >> $GITHUB_ENV
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/autoscale-backend:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/autoscale-backend:latest
 
-      - name: Verify kubectl can reach cluster (debug)
+      - name: Build & push frontend
+        working-directory: frontend
         run: |
-          kubectl version --client
-          kubectl config view --minify --raw
-          # this will fail if the kubeconfig points to a local-only cluster (minikube)
-          kubectl get nodes || true
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/autoscale-frontend:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/autoscale-frontend:latest
 
-      - name: Apply k8s manifests
+      - name: Deploy to Minikube
         run: |
           kubectl apply -f k8s/namespace.yaml
           kubectl apply -n autoscale -f k8s
