@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-deploy:
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux, X64, label-1]
 
     steps:
       - name: Checkout repo
