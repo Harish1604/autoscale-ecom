@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoscale-frontend
+  namespace: autoscale
+  labels:
+    app: autoscale-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autoscale-frontend
+  template:
+    metadata:
+      labels:
+        app: autoscale-frontend
+    spec:
+      containers:
+        - name: frontend
+          # Replace IMAGE_PLACEHOLDER with your registry/image:tag
+          image: harishx64/autoscale-frontend:latest
+          ports:
+            - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10

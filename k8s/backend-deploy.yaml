@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoscale-backend
+  namespace: autoscale
+  labels:
+    app: autoscale-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: autoscale-backend
+  template:
+    metadata:
+      labels:
+        app: autoscale-backend
+    spec:
+      containers:
+        - name: backend
+          # Replace IMAGE_PLACEHOLDER with your registry/image:tag
+          image: harishx64/autoscale-backend:latest
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5

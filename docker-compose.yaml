@@ -1,0 +1,21 @@
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: autoscale-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: autoscale-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
