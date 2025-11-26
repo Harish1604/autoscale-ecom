@@ -13,7 +13,7 @@ app.get("/status", (req, res) => {
   });
 });
 
-// Dummy products
+// Dummy product
 app.get("/products", (req, res) => {
   res.json([
     { id: 1, name: "T-Shirt", price: 299 },
