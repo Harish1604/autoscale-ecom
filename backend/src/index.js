@@ -8,7 +8,7 @@ app.use(express.json());
 app.get("/status", (req, res) => {
   res.json({
     status: "ok",
-    host: os.hostname(),
+    host: os.hostname(), 
     time: Date.now()
   });
 });
