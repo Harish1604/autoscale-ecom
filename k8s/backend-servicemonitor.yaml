@@ -3,11 +3,19 @@ kind: ServiceMonitor
 metadata:
   name: autoscale-backend-monitor
   namespace: autoscale
+  labels:
+    release: monitoring
 spec:
   selector:
     matchLabels:
       app: autoscale-backend
+  namespaceSelector:
+    any: false
+    matchNames:
+      - autoscale
   endpoints:
     - port: http
       path: /metrics
       interval: 15s
+      honorLabels: true
+      scheme: http
