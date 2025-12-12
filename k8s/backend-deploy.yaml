@@ -23,20 +23,29 @@ spec:
             - containerPort: 3000
           resources:
             requests:
-              cpu: "200m"
-              memory: "256Mi"
+              cpu: "100m"
+              memory: "128Mi"
             limits:
               cpu: "500m"
-              memory: "512Mi"
+              memory: "256Mi"
           livenessProbe:
-            httpGet:
-              path: /status
-              port: 3000
-            initialDelaySeconds: 10
-            periodSeconds: 10
+              httpGet:
+                path: /status
+                port: 3000
+              initialDelaySeconds: 5
+              periodSeconds: 10
+
           readinessProbe:
-            httpGet:
-              path: /status
-              port: 3000
-            initialDelaySeconds: 5
-            periodSeconds: 5
+              httpGet:
+                path: /status
+                port: 3000
+              initialDelaySeconds: 2
+              periodSeconds: 5
+
+          startupProbe:
+              httpGet:
+                path: /status
+                port: 3000
+              failureThreshold: 30
+              periodSeconds: 5
+

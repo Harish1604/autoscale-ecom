@@ -4,6 +4,16 @@ const os = require("os");
 const app = express();
 app.use(express.json());
 
+const client = require("prom-client");
+client.collectDefaultMetrics();
+
+app.get("/metrics", async (req, res) => {
+  res.set("Content-Type", client.register.contentType);
+  res.end(await client.register.metrics());
+});
+
+
+
 // Check server status
 app.get("/status", (req, res) => {
   res.json({

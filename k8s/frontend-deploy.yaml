@@ -17,13 +17,30 @@ spec:
     spec:
       containers:
         - name: frontend
-          # Replace IMAGE_PLACEHOLDER with your registry/image:tag
           image: harishx64/autoscale-frontend:latest
           ports:
             - containerPort: 80
+
+          # Health checks
           livenessProbe:
             httpGet:
               path: /
               port: 80
-            initialDelaySeconds: 10
+            initialDelaySeconds: 3
             periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 1
+            periodSeconds: 5
+
+          # Resource limits (REQUIRED for HPA)
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
